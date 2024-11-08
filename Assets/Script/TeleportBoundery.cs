@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-public class TeleportBoundery : MonoBehaviour
+public class TeleportBoundery : MonoBehaviour //neu vuot qua gioi han se dich chuyen boid ve huong doi dien
 {
     [SerializeField] private Boundery boundery;
     private void FixedUpdate()

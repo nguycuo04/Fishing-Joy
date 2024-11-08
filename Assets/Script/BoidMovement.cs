@@ -6,21 +6,22 @@ using UnityEngine;
 
 public class BoidMovement : MonoBehaviour
 {
-    [SerializeField] private ListBoidVarriable boids;
+    [SerializeField] private ListBoidVarriable boids; //Moi boid giu 1 danh sach chua cac boid xung quanh
     private float radius = 2f;
     private float visionAngle = 270f;
+
     private float turnSpeed = 10f;
     public Vector3 velocity { get; private set; }
     [SerializeField] private float forwardSpeed = 5f;
 
     private void FixedUpdate()
     {
-        velocity = Vector2.Lerp(velocity, CalculateVelocity(),turnSpeed/2 * Time.fixedDeltaTime);
+        velocity = Vector2.Lerp(velocity, CalculateVelocity(),turnSpeed/2 * Time.fixedDeltaTime); //di chuyen boid di thang & them 1 vai quy luat
         transform.position += velocity * Time.fixedDeltaTime;
         LookRotation();
     }
 
-    private Vector2 CalculateVelocity()
+    private Vector2 CalculateVelocity() //ham tinh toan van toc va huong di cua boid
     {
         var boidsInRange = BoidInRange();
         Vector2 velocity = ((Vector2)transform.forward
@@ -31,7 +32,7 @@ public class BoidMovement : MonoBehaviour
         return velocity;
     }
 
-    private void LookRotation()
+    private void LookRotation() // xoay theo huong nhin cua boids
     {
         transform.rotation = Quaternion.Slerp(transform.localRotation, Quaternion.LookRotation(velocity),turnSpeed * Time.fixedDeltaTime);
     }
@@ -43,7 +44,7 @@ public class BoidMovement : MonoBehaviour
         return listBoid;
     }
 
-    private bool InVisionCone(Vector2 position)
+    private bool InVisionCone(Vector2 position) //Ham tinh vector tu boid hien tai den boid trong tam nhin
     {
         Vector2 dirctionToPosition = position - (Vector2)transform.position;
         float dotProduct = Vector2.Dot(transform.forward, dirctionToPosition);
@@ -61,7 +62,7 @@ public class BoidMovement : MonoBehaviour
             Gizmos.DrawLine(transform.position, boid.transform.position);
         }
     }
-    private Vector2 Separation(List<BoidMovement> boidMovements)
+    private Vector2 Separation(List<BoidMovement> boidMovements) //tranh qua cham lan nhau
     {
         Vector2 direction = Vector2.zero;
         foreach(var boid in boidMovements)
@@ -72,16 +73,25 @@ public class BoidMovement : MonoBehaviour
         }
         return direction.normalized;
     }    
-    private Vector2 Aligment(List<BoidMovement> boidMovements)
+    private Vector2 Aligment(List<BoidMovement> boidMovements) //di theo huong chung cac boid khac
     {
         Vector2 direction = Vector2.zero;
-        foreach (var boid in boidMovements) direction += (Vector2)boid.velocity;
-        if (boidMovements.Count != 0) direction /= boidMovements.Count;
-        else direction = velocity;
+        foreach (var boid in boidMovements)
+        {
+            direction += (Vector2)boid.velocity;
+        }
+        if (boidMovements.Count != 0)
+        {
+            direction /= boidMovements.Count;
+        }
+        else
+        {
+            direction = velocity;
+        }
         return direction.normalized;
     }
 
-    private Vector2 Cohesion(List<BoidMovement> boidMovements)
+    private Vector2 Cohesion(List<BoidMovement> boidMovements) //co gang huong ve phia trung tam
     {
         Vector2 direction;
         Vector2 center = Vector2.zero;

@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 
 [CreateAssetMenu(menuName = "ScriptableObject/Boundery")]
-public class Boundery : ScriptableObject
+public class Boundery : ScriptableObject //gioi han pham vi boi cac boid
 {
     private float xLimit;
     private float yLimit;
