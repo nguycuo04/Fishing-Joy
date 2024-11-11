@@ -62,7 +62,7 @@ public class BoidMovement : MonoBehaviour
             Gizmos.DrawLine(transform.position, boid.transform.position);
         }
     }
-    private Vector2 Separation(List<BoidMovement> boidMovements) //tranh qua cham lan nhau
+    private Vector2 Separation(List<BoidMovement> boidMovements) //tranh va cham lan nhau
     {
         Vector2 direction = Vector2.zero;
         foreach(var boid in boidMovements)

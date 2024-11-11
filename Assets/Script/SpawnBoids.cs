@@ -1,7 +1,7 @@
-using System.Collections;
+﻿using System.Collections;
 using UnityEngine;
 
-public class SpawnFishes : MonoBehaviour
+public class SpawnBoids : MonoBehaviour
 {
     [SerializeField] private ListBoidVarriable boids;
     [SerializeField] private GameObject boidPrefab;

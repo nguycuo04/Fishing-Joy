@@ -9,4 +9,8 @@ EditorBuildSettings:
     path: Assets/Scenes/SampleScene.unity
     guid: 2cda990e2423bbf4892e6590ba056729
   m_configObjects:
+    com.unity.adaptiveperformance.loader_settings: {fileID: 11400000, guid: 18ef4b51519de1240bea0f5d2c2dfd2e, type: 2}
+    com.unity.adaptiveperformance.samsung.android.provider_settings: {fileID: 11400000, guid: 3a7084d4fa1dd38478eed2cc2d972ba2, type: 2}
     com.unity.adaptiveperformance.simulator.provider_settings: {fileID: 11400000, guid: f250d7275124407449a5be40789e54c8, type: 2}
+    com.unity.xr.management.loader_settings: {fileID: 11400000, guid: ad817461e228cda458d4384f9244c073, type: 2}
+    xr.sdk.mock-hmd.settings: {fileID: 11400000, guid: 8616a94dce053ac4aa1dc0db1ae807f0, type: 2}
