@@ -685,6 +685,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   boids: {fileID: 11400000, guid: 987536bb27b116247bdb7ae992201139, type: 2}
+  fishMovements:
+  - {fileID: 3642849570439997521, guid: f1c190fce04ba7044b240bf97884b1cf, type: 3}
   forwardSpeed: 5
 --- !u!114 &-3260256304041005060
 MonoBehaviour:

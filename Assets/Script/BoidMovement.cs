@@ -1,14 +1,17 @@
-using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 using UnityEngine;
 
 public class BoidMovement : MonoBehaviour
 {
-    [SerializeField] private ListBoidVarriable boids; //Moi boid giu 1 danh sach chua cac boid xung quanh
+    [SerializeField] private ListBoidVarriable boids; // Mỗi boid giữ một danh sách chứa các boid xung quanh
+    [SerializeField] public List<FishMovement> fishMovements; // Danh sách các cá câu được
+
     private float radius = 2f;
     private float visionAngle = 270f;
+    private float avoidanceStrength = 10f; // Hệ số né tránh các cá thể câu được
+    [SerializeField] private float fishAvoidanceStrength = 20f; // Hệ số né tránh các cá câu được
+
 
     private float turnSpeed = 10f;
     public Vector3 velocity { get; private set; }
@@ -16,12 +19,12 @@ public class BoidMovement : MonoBehaviour
 
     private void FixedUpdate()
     {
-        velocity = Vector2.Lerp(velocity, CalculateVelocity(),turnSpeed/2 * Time.fixedDeltaTime); //di chuyen boid di thang & them 1 vai quy luat
+        velocity = Vector2.Lerp(velocity, CalculateVelocity(), turnSpeed / 2 * Time.fixedDeltaTime);
         transform.position += velocity * Time.fixedDeltaTime;
         LookRotation();
     }
 
-    private Vector2 CalculateVelocity() //ham tinh toan van toc va huong di cua boid
+    private Vector2 CalculateVelocity()
     {
         var boidsInRange = BoidInRange();
         Vector2 velocity = ((Vector2)transform.forward
@@ -32,10 +35,11 @@ public class BoidMovement : MonoBehaviour
         return velocity;
     }
 
-    private void LookRotation() // xoay theo huong nhin cua boids
+    private void LookRotation()
     {
-        transform.rotation = Quaternion.Slerp(transform.localRotation, Quaternion.LookRotation(velocity),turnSpeed * Time.fixedDeltaTime);
+        transform.rotation = Quaternion.Slerp(transform.localRotation, Quaternion.LookRotation(velocity), turnSpeed * Time.fixedDeltaTime);
     }
+
     private List<BoidMovement> BoidInRange()
     {
         var listBoid = boids.boidMovements.FindAll(boid => boid != this
@@ -44,36 +48,47 @@ public class BoidMovement : MonoBehaviour
         return listBoid;
     }
 
-    private bool InVisionCone(Vector2 position) //Ham tinh vector tu boid hien tai den boid trong tam nhin
+    private bool InVisionCone(Vector2 position)
     {
-        Vector2 dirctionToPosition = position - (Vector2)transform.position;
-        float dotProduct = Vector2.Dot(transform.forward, dirctionToPosition);
+        Vector2 directionToPosition = position - (Vector2)transform.position;
+        float dotProduct = Vector2.Dot(transform.forward, directionToPosition);
         float cosHalfVisionAngle = Mathf.Cos(visionAngle * 0.5f * Mathf.Deg2Rad);
         return dotProduct >= cosHalfVisionAngle;
     }
-    private void OnDrawGizmosSelected()
-    {
-        Gizmos.color = Color.red;
-        Gizmos.DrawWireSphere(transform.position, radius);
-        var boidsInrange = BoidInRange();
-        foreach (var boid in boidsInrange)
-        {
-            Gizmos.color = Color.yellow;
-            Gizmos.DrawLine(transform.position, boid.transform.position);
-        }
-    }
-    private Vector2 Separation(List<BoidMovement> boidMovements) //tranh va cham lan nhau
+
+    private Vector2 Separation(List<BoidMovement> boidMovements)
     {
         Vector2 direction = Vector2.zero;
-        foreach(var boid in boidMovements)
+
+        // Tránh né các cá boid khác
+        foreach (var boid in boidMovements)
         {
-            float ratio = Mathf.Clamp01((boid.transform.position - transform.position)
-                                        .sqrMagnitude/radius);
-            direction -= ratio * (Vector2)(boid.transform.position - transform.position);
+            float distanceToBoid = (boid.transform.position - transform.position).sqrMagnitude;
+            if (distanceToBoid <= radius * radius)
+            {
+                float ratio = Mathf.Clamp01(1 - (distanceToBoid / (radius * radius)));
+                direction -= ratio * (Vector2)(boid.transform.position - transform.position).normalized * avoidanceStrength;
+            }
         }
+
+        // Tránh né các cá câu được
+        foreach (var fish in fishMovements)
+        {
+            float distanceToFish = (fish.transform.position - transform.position).sqrMagnitude;
+            if (distanceToFish <= radius * radius)
+            {
+                float ratio = Mathf.Clamp01(1 - (distanceToFish / (radius * radius)));
+                direction -= ratio * (Vector2)(fish.transform.position - transform.position).normalized * fishAvoidanceStrength;
+            }
+        }
+
         return direction.normalized;
-    }    
-    private Vector2 Aligment(List<BoidMovement> boidMovements) //di theo huong chung cac boid khac
+    }
+
+
+
+
+    private Vector2 Aligment(List<BoidMovement> boidMovements)
     {
         Vector2 direction = Vector2.zero;
         foreach (var boid in boidMovements)
@@ -91,11 +106,11 @@ public class BoidMovement : MonoBehaviour
         return direction.normalized;
     }
 
-    private Vector2 Cohesion(List<BoidMovement> boidMovements) //co gang huong ve phia trung tam
+    private Vector2 Cohesion(List<BoidMovement> boidMovements)
     {
         Vector2 direction;
         Vector2 center = Vector2.zero;
-        foreach( var boid in boidMovements)
+        foreach (var boid in boidMovements)
         {
             center += (Vector2)boid.transform.position;
         }
@@ -110,4 +125,29 @@ public class BoidMovement : MonoBehaviour
         direction = center - (Vector2)transform.position;
         return direction.normalized;
     }
+
+    private void OnDrawGizmosSelected()
+    {
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireSphere(transform.position, radius);
+
+        // Kết nối boid với các boid khác trong phạm vi
+        var boidsInRange = BoidInRange();
+        foreach (var boid in boidsInRange)
+        {
+            Gizmos.color = Color.yellow;
+            Gizmos.DrawLine(transform.position, boid.transform.position);
+        }
+
+        // Kết nối boid với các cá câu được trong phạm vi
+        foreach (var fish in fishMovements)
+        {
+            if ((fish.transform.position - transform.position).sqrMagnitude <= radius * radius)
+            {
+                Gizmos.color = Color.blue;
+                Gizmos.DrawLine(transform.position, fish.transform.position);
+            }
+        }
+    }
+
 }

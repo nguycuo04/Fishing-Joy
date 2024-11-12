@@ -8,7 +8,7 @@ public class SpawnFishesRandom : MonoBehaviour
     public GameObject[] fishPrefabs; // Danh sách các prefab của cá
     public int fishCount = 5; // Số lượng cá cần spawn
     public Vector2 spawnAreaSize; // Kích thước khu vực spawn cá (dài, rộng)
-
+    public List<FishMovement> fishMovements = new List<FishMovement>();
     void Start()
     {
         SpawnFish();
@@ -28,8 +28,16 @@ public class SpawnFishesRandom : MonoBehaviour
             GameObject fishPrefab = fishPrefabs[Random.Range(0, fishPrefabs.Length)];
 
             // Tạo cá tại vị trí spawn ngẫu nhiên
-            Instantiate(fishPrefab, spawnPosition, Quaternion.identity);
+            GameObject fish = Instantiate(fishPrefab, spawnPosition, Quaternion.identity);
+
+            // Thêm FishMovement của cá vào danh sách fishMovements
+            FishMovement fishMovement = fish.GetComponent<FishMovement>();
+            if (fishMovement != null)
+            {
+                fishMovements.Add(fishMovement);
+            }
         }
     }
+
 }
 
