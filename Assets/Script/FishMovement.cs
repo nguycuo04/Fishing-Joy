@@ -19,11 +19,12 @@ public class FishMovement : MonoBehaviour
     }
     void Update()
     {
-        // Di chuyển cá theo hướng mà nó đang đối diện
-        transform.Translate(transform.right * speed * Time.deltaTime, Space.World);
+        // Di chuyển cá theo hướng hiện tại
+        transform.Translate(direction * speed * Time.deltaTime, Space.World);
         CheckBoundsAndTurn();
         Caught();
     }
+
     private void CheckBoundsAndTurn()
     {
         Vector2 currentPosition = transform.position;
@@ -46,6 +47,9 @@ public class FishMovement : MonoBehaviour
             transform.Rotate(0, 180, 0);
         }
     }
+
+
+
     private void Caught()
     {
         if (caughtFish)
