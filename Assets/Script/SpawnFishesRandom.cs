@@ -5,9 +5,9 @@ using UnityEngine;
 
 public class SpawnFishesRandom : MonoBehaviour
 {
-    public GameObject[] fishPrefabs; // Danh sách các prefab của cá
-    public int fishCount = 5; // Số lượng cá cần spawn
-    public Vector2 spawnAreaSize; // Kích thước khu vực spawn cá (dài, rộng)
+    [SerializeField] private GameObject[] fishPrefabs; // Danh sách các prefab của cá
+    [SerializeField] private int fishCount; // Số lượng cá cần spawn
+    [SerializeField] private Vector2 spawnAreaSize; // Kích thước khu vực spawn cá (dài, rộng)
     public List<FishMovement> fishMovements = new List<FishMovement>();
     void Start()
     {
