@@ -4,49 +4,36 @@ using UnityEngine;
 
 public class BoidMovement : MonoBehaviour
 {
-    [SerializeField] private ListBoidVarriable boids; // Mỗi boid giữ một danh sách chứa các boid xung quanh
-    [SerializeField] public List<FishMovement> fishMovements; // Danh sách các cá câu được
+    [SerializeField] private ListBoidVarriable boids;
+    [SerializeField] public List<FishMovement> fishMovements;
 
     private float radius = 2f;
     private float visionAngle = 270f;
-    private float avoidanceStrength = 10f; // Hệ số né tránh các cá thể câu được
-    [SerializeField] private float fishAvoidanceStrength = 20f; // Hệ số né tránh các cá câu được
-
+    private float avoidanceStrength = 10f;
+    [SerializeField] private float fishAvoidanceStrength = 20f;
 
     private float turnSpeed = 10f;
-    //public Vector3 velocity { get; private set; }
-    public Vector2 velocity { get; private set; } // Sử dụng Vector2 thay vì Vector3
-
+    public Vector2 velocity { get; private set; }
     [SerializeField] private float forwardSpeed = 5f;
 
-    //private void FixedUpdate()
-    //{
-    //    velocity = Vector2.Lerp(velocity, CalculateVelocity(), turnSpeed / 2 * Time.fixedDeltaTime);
-    //    transform.position += velocity * Time.fixedDeltaTime;
-    //    LookRotation();
-    //}
+    private SpriteRenderer spriteRenderer;
+
+    private void Start()
+    {
+        spriteRenderer = GetComponent<SpriteRenderer>();
+    }
+
     private void FixedUpdate()
     {
         velocity = Vector2.Lerp(velocity, CalculateVelocity(), turnSpeed / 2 * Time.fixedDeltaTime);
-        transform.position += (Vector3)velocity * Time.fixedDeltaTime; // Ép kiểu sang Vector3 để thay đổi vị trí
+        transform.position += (Vector3)velocity * Time.fixedDeltaTime;
         LookRotation();
     }
 
-
-    //private Vector2 CalculateVelocity()
-    //{
-    //    var boidsInRange = BoidInRange();
-    //    Vector2 velocity = ((Vector2)transform.forward
-    //                        + 1.7f * Separation(boidsInRange)
-    //                        + 0.1f * Aligment(boidsInRange)
-    //                        + Cohesion(boidsInRange)
-    //                        ).normalized * forwardSpeed;
-    //    return velocity;
-    //}
     private Vector2 CalculateVelocity()
     {
         var boidsInRange = BoidInRange();
-        Vector2 velocity = ((Vector2)transform.right // Sử dụng transform.right để lấy hướng 2D
+        Vector2 velocity = ((Vector2)transform.right
                             + 1.7f * Separation(boidsInRange)
                             + 0.1f * Aligment(boidsInRange)
                             + Cohesion(boidsInRange)
@@ -54,17 +41,24 @@ public class BoidMovement : MonoBehaviour
         return velocity;
     }
 
-
-    //private void LookRotation()
-    //{
-    //    transform.rotation = Quaternion.Slerp(transform.localRotation, Quaternion.LookRotation(velocity), turnSpeed * Time.fixedDeltaTime);
-    //}
     private void LookRotation()
     {
+        // Tính góc cần xoay trên trục Z
         float angle = Mathf.Atan2(velocity.y, velocity.x) * Mathf.Rad2Deg;
-        transform.rotation = Quaternion.Euler(0, 0, angle); // Chỉ xoay trên trục Z
-    }
 
+        // Nếu hướng thay đổi từ trái sang phải hoặc ngược lại, lật sprite
+        if (velocity.x < 0)
+        {
+            spriteRenderer.flipY = true; // Lật theo trục Y nếu di chuyển sang trái
+        }
+        else
+        {
+            spriteRenderer.flipY = false; // Đảm bảo không lật khi di chuyển sang phải
+        }
+
+        // Cập nhật góc xoay trên trục Z
+        transform.rotation = Quaternion.Euler(0, 0, angle);
+    }
 
     private List<BoidMovement> BoidInRange()
     {
@@ -74,27 +68,18 @@ public class BoidMovement : MonoBehaviour
         return listBoid;
     }
 
-    //private bool InVisionCone(Vector2 position)
-    //{
-    //    Vector2 directionToPosition = position - (Vector2)transform.position;
-    //    float dotProduct = Vector2.Dot(transform.forward, directionToPosition);
-    //    float cosHalfVisionAngle = Mathf.Cos(visionAngle * 0.5f * Mathf.Deg2Rad);
-    //    return dotProduct >= cosHalfVisionAngle;
-    //}
     private bool InVisionCone(Vector2 position)
     {
         Vector2 directionToPosition = position - (Vector2)transform.position;
-        float dotProduct = Vector2.Dot(transform.right, directionToPosition.normalized); // Sử dụng transform.right cho hướng 2D
+        float dotProduct = Vector2.Dot(transform.right, directionToPosition.normalized);
         float cosHalfVisionAngle = Mathf.Cos(visionAngle * 0.5f * Mathf.Deg2Rad);
         return dotProduct >= cosHalfVisionAngle;
     }
-
 
     private Vector2 Separation(List<BoidMovement> boidMovements)
     {
         Vector2 direction = Vector2.zero;
 
-        // Tránh né các cá boid khác
         foreach (var boid in boidMovements)
         {
             float distanceToBoid = (boid.transform.position - transform.position).sqrMagnitude;
@@ -105,7 +90,6 @@ public class BoidMovement : MonoBehaviour
             }
         }
 
-        // Tránh né các cá câu được
         foreach (var fish in fishMovements)
         {
             float distanceToFish = (fish.transform.position - transform.position).sqrMagnitude;
@@ -118,9 +102,6 @@ public class BoidMovement : MonoBehaviour
 
         return direction.normalized;
     }
-
-
-
 
     private Vector2 Aligment(List<BoidMovement> boidMovements)
     {
@@ -159,29 +140,4 @@ public class BoidMovement : MonoBehaviour
         direction = center - (Vector2)transform.position;
         return direction.normalized;
     }
-
-    private void OnDrawGizmosSelected()
-    {
-        Gizmos.color = Color.red;
-        Gizmos.DrawWireSphere(transform.position, radius);
-
-        // Kết nối boid với các boid khác trong phạm vi
-        var boidsInRange = BoidInRange();
-        foreach (var boid in boidsInRange)
-        {
-            Gizmos.color = Color.yellow;
-            Gizmos.DrawLine(transform.position, boid.transform.position);
-        }
-
-        // Kết nối boid với các cá câu được trong phạm vi
-        foreach (var fish in fishMovements)
-        {
-            if ((fish.transform.position - transform.position).sqrMagnitude <= radius * radius)
-            {
-                Gizmos.color = Color.blue;
-                Gizmos.DrawLine(transform.position, fish.transform.position);
-            }
-        }
-    }
-
 }
